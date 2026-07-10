@@ -64,11 +64,7 @@ class LoginForm(AuthenticationForm):
                 raise ValidationError("Invalid credentials.")
             if user.is_suspended:
                 raise ValidationError("This account has been suspended.")
-            if (
-                user.is_child
-                and hasattr(user, "parent_link")
-                and user.parent_link.child_disabled
-            ):
+            if user.is_child and hasattr(user, "parent_link") and user.parent_link.child_disabled:
                 raise ValidationError("This account has been disabled by a parent.")
             self.confirm_login_allowed(user)
             self.user_cache = user
@@ -79,9 +75,7 @@ class TotpVerifyForm(forms.Form):
     token = forms.CharField(
         max_length=8,
         label="Authentication code",
-        widget=forms.TextInput(
-            attrs={"autocomplete": "one-time-code", "inputmode": "numeric"}
-        ),
+        widget=forms.TextInput(attrs={"autocomplete": "one-time-code", "inputmode": "numeric"}),
     )
 
 

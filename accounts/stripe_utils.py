@@ -1,5 +1,3 @@
-import secrets
-
 import stripe
 from django.conf import settings
 
@@ -10,7 +8,7 @@ def stripe_configured() -> bool:
 
 def create_setup_intent(user) -> dict:
     if not stripe_configured():
-        return {"client_secret": "dev_mode", "dev_mode": True}
+        return {"client_secret": "dev_mode", "dev_mode": True, "setup_intent_id": None}
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
     if not user.stripe_customer_id:
@@ -28,7 +26,19 @@ def create_setup_intent(user) -> dict:
         usage="off_session",
         metadata={"user_id": str(user.pk)},
     )
-    return {"client_secret": intent.client_secret, "dev_mode": False}
+    return {
+        "client_secret": intent.client_secret,
+        "dev_mode": False,
+        "setup_intent_id": intent.id,
+    }
+
+
+def verify_setup_intent(setup_intent_id: str) -> bool:
+    if not stripe_configured():
+        return False
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    intent = stripe.SetupIntent.retrieve(setup_intent_id)
+    return intent.status == "succeeded"
 
 
 def handle_setup_intent_succeeded(event_data: dict) -> int | None:

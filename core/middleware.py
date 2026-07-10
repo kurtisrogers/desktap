@@ -1,6 +1,6 @@
 import re
 
-from django.conf import settings
+from core.viewport import viewport_too_small
 
 MOBILE_UA_PATTERNS = [
     re.compile(pattern, re.IGNORECASE)
@@ -23,6 +23,7 @@ MOBILE_UA_PATTERNS = [
 EXEMPT_PATH_PREFIXES = (
     "/static/",
     "/blocked/",
+    "/set-viewport/",
 )
 
 
@@ -30,16 +31,6 @@ def is_mobile_user_agent(user_agent: str) -> bool:
     if not user_agent:
         return False
     return any(pattern.search(user_agent) for pattern in MOBILE_UA_PATTERNS)
-
-
-def viewport_too_small(request) -> bool:
-    width = request.COOKIES.get("desktap_viewport_width")
-    if width is None:
-        return False
-    try:
-        return int(width) < settings.MIN_VIEWPORT_WIDTH
-    except (TypeError, ValueError):
-        return True
 
 
 class MobileBlockMiddleware:

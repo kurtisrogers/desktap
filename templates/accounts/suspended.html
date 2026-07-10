@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Account suspended — Desktap{% endblock %}
+
+{% block content %}
+<section class="blocked-page">
+    <h1>Account suspended</h1>
+    <p>This account has been suspended by Desktap staff for safety reasons.</p>
+    <p>If you believe this is a mistake, please contact support.</p>
+    <a href="{% url 'accounts:login' %}" class="btn btn-secondary">Return to login</a>
+</section>
+{% endblock %}

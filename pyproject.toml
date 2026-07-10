@@ -1,0 +1,25 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "desktap.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+python_classes = ["Test*", "*Tests"]
+python_functions = ["test_*"]
+addopts = ["-ra"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.coverage.run]
+source = ["accounts", "core", "posts", "moderation", "desktap"]
+omit = ["*/migrations/*", "*/tests.py", "manage.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false

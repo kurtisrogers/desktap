@@ -6,8 +6,10 @@ ONBOARDING_EXEMPT_PREFIXES = (
     "/accounts/enroll-2fa",
     "/accounts/child-setup",
     "/accounts/stripe-webhook",
+    "/accounts/suspended",
     "/static/",
     "/blocked/",
+    "/set-viewport/",
     "/admin/login",
 )
 
@@ -26,24 +28,26 @@ class OnboardingGateMiddleware:
             path.startswith(prefix) for prefix in ONBOARDING_EXEMPT_PREFIXES
         ):
             if user.is_suspended:
-                pass
-            elif (
-                user.is_child
-                and hasattr(user, "parent_link")
-                and user.parent_link.child_disabled
-            ):
-                from django.contrib.auth import logout
                 from django.contrib import messages
+                from django.contrib.auth import logout
+                from django.shortcuts import redirect
+
+                messages.error(request, "This account has been suspended.")
+                logout(request)
+                return redirect("accounts:suspended")
+            if user.is_child and hasattr(user, "parent_link") and user.parent_link.child_disabled:
+                from django.contrib import messages
+                from django.contrib.auth import logout
                 from django.shortcuts import redirect
 
                 messages.error(request, "Your account has been disabled by your parent.")
                 logout(request)
                 return redirect("accounts:login")
-            elif not user.totp_enrolled:
+            if not user.totp_enrolled:
                 from django.shortcuts import redirect
 
                 return redirect("accounts:enroll_2fa")
-            elif user.role == "adult" and not user.card_verified:
+            if user.role == "adult" and not user.card_verified:
                 from django.shortcuts import redirect
 
                 return redirect("accounts:verify_card")

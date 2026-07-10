@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import ChildInvite, ParentChildLink, User
+from .models import ChildInvite, ParentChildLink, SecurityEvent, User
 
 
 @admin.register(User)
@@ -55,3 +55,10 @@ class ParentChildLinkAdmin(admin.ModelAdmin):
 class ChildInviteAdmin(admin.ModelAdmin):
     list_display = ("username", "email", "parent", "accepted", "created_at")
     list_filter = ("accepted",)
+
+
+@admin.register(SecurityEvent)
+class SecurityEventAdmin(admin.ModelAdmin):
+    list_display = ("event_type", "user", "ip_address", "created_at")
+    list_filter = ("event_type",)
+    readonly_fields = ("event_type", "user", "ip_address", "user_agent", "metadata", "created_at")
