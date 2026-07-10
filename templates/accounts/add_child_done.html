@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Invite sent — Desktap{% endblock %}
+
+{% block content %}
+<h1>Invite sent</h1>
+<p>An invite has been sent to <strong>{{ invite.email }}</strong>.</p>
+<p>Setup link (also sent by email):</p>
+<p><a href="{{ setup_url }}">{{ setup_url }}</a></p>
+<a href="{% url 'accounts:parent_dashboard' %}" class="btn btn-primary">Back to dashboard</a>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.display_name }} — Desktap{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <h1>{{ profile_user.display_name }}</h1>
+    <p class="muted">@{{ profile_user.username }}</p>
+    {% if profile_user.bio %}<p>{{ profile_user.bio }}</p>{% endif %}
+    {% if can_follow %}
+    <form method="post" action="{% url 'posts:toggle_follow' username=profile_user.username %}">
+        {% csrf_token %}
+        <button type="submit" class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}">
+            {% if is_following %}Unfollow{% else %}Follow{% endif %}
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+<h2>Posts</h2>
+{% for post in posts %}
+<article class="post-card">
+    <p><a href="{% url 'posts:post_detail' pk=post.pk %}">{{ post.content }}</a></p>
+    <time class="muted">{{ post.created_at }}</time>
+</article>
+{% empty %}
+<p class="muted">No posts yet.</p>
+{% endfor %}
+{% endblock %}

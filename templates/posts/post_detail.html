@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Post — Desktap{% endblock %}
+
+{% block content %}
+<article class="post-card">
+    <header class="post-header">
+        <a href="{% url 'posts:profile' username=post.author.username %}">
+            <strong>{{ post.author.display_name }}</strong>
+        </a>
+        <time class="muted">{{ post.created_at }}</time>
+    </header>
+    <p>{{ post.content }}</p>
+    <footer class="post-footer">
+        <form method="post" action="{% url 'posts:toggle_like' pk=post.pk %}" hx-post="{% url 'posts:toggle_like' pk=post.pk %}" hx-target="#like-{{ post.pk }}" hx-swap="outerHTML">
+            {% csrf_token %}
+            <span id="like-{{ post.pk }}">
+                {% include "posts/partials/like_button.html" %}
+            </span>
+        </form>
+        {% if post.author == user %}
+        <form method="post" action="{% url 'posts:delete_post' pk=post.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-link danger">Delete</button>
+        </form>
+        {% endif %}
+    </footer>
+</article>
+
+<section class="comments">
+    <h2>Comments</h2>
+    <form method="post" action="{% url 'posts:add_comment' pk=post.pk %}" class="form-card">
+        {% csrf_token %}
+        {{ comment_form.content }}
+        <button type="submit" class="btn btn-primary">Comment</button>
+    </form>
+    {% for comment in comments %}
+    <article class="comment-card">
+        <strong>{{ comment.author.display_name }}</strong>
+        <span class="muted">{{ comment.created_at }}</span>
+        <p>{{ comment.content }}</p>
+        {% if comment.author == user %}
+        <form method="post" action="{% url 'posts:delete_comment' pk=comment.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-link danger">Delete</button>
+        </form>
+        {% endif %}
+    </article>
+    {% empty %}
+    <p class="muted">No comments yet.</p>
+    {% endfor %}
+</section>
+
+<section class="report-section">
+    <h3>Report this post</h3>
+    <form method="post" action="{% url 'posts:report_content' content_type='post' content_id=post.pk %}" class="form-card">
+        {% csrf_token %}
+        {{ report_form.as_p }}
+        <button type="submit" class="btn btn-secondary">Submit report</button>
+    </form>
+</section>
+{% endblock %}

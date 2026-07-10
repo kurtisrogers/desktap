@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Feed — Desktap{% endblock %}
+
+{% block content %}
+<h1>Your feed</h1>
+
+<form method="post" action="{% url 'posts:create_post' %}" class="form-card compose-box">
+    {% csrf_token %}
+    {{ post_form.content }}
+    <button type="submit" class="btn btn-primary">Post</button>
+</form>
+
+{% for post in posts %}
+<article class="post-card">
+    <header class="post-header">
+        <a href="{% url 'posts:profile' username=post.author.username %}">
+            <strong>{{ post.author.display_name }}</strong>
+            <span class="muted">@{{ post.author.username }}</span>
+        </a>
+        <time class="muted">{{ post.created_at }}</time>
+    </header>
+    <p><a href="{% url 'posts:post_detail' pk=post.pk %}">{{ post.content }}</a></p>
+    <footer class="post-footer">
+        <span>{{ post.like_count }} like{{ post.like_count|pluralize }}</span>
+        <a href="{% url 'posts:post_detail' pk=post.pk %}">Comment</a>
+    </footer>
+</article>
+{% empty %}
+<p class="muted">No posts yet. Follow people or create your first post!</p>
+{% endfor %}
+{% endblock %}

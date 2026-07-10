@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Set up your account — Desktap{% endblock %}
+
+{% block content %}
+<h1>Welcome to Desktap</h1>
+<p>Set a password for <strong>@{{ invite.username }}</strong>, then you'll set up two-factor authentication.</p>
+<form method="post" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Create account</button>
+</form>
+{% endblock %}

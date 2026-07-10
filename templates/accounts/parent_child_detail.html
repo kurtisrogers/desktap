@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ child.display_name }} — Parent view{% endblock %}
+
+{% block content %}
+<h1>{{ child.display_name }} (@{{ child.username }})</h1>
+<p><a href="{% url 'accounts:parent_dashboard' %}">&larr; Back to dashboard</a></p>
+
+<h2>Posts</h2>
+{% for post in posts %}
+<article class="post-card">
+    <p>{{ post.content }}</p>
+    <time class="muted">{{ post.created_at }}</time>
+</article>
+{% empty %}
+<p class="muted">No posts yet.</p>
+{% endfor %}
+
+<h2>Comments</h2>
+{% for comment in comments %}
+<article class="post-card">
+    <p>{{ comment.content }}</p>
+    <p class="muted">On post #{{ comment.post_id }} · {{ comment.created_at }}</p>
+</article>
+{% empty %}
+<p class="muted">No comments yet.</p>
+{% endfor %}
+{% endblock %}

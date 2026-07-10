@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Verify card — Desktap{% endblock %}
+
+{% block content %}
+<h1>Verify your identity</h1>
+<p>
+    To keep Desktap safe, we verify every account with a credit card.
+    <strong>No charge is made</strong> — this only confirms you are a real person.
+</p>
+
+{% if dev_mode %}
+<div class="form-card">
+    <p class="muted">Development mode: Stripe is not configured.</p>
+    <form method="post" action="{% url 'accounts:verify_card_dev' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Simulate card verification</button>
+    </form>
+</div>
+{% else %}
+<div id="card-element" class="form-card"></div>
+<button id="submit-card" class="btn btn-primary">Verify card</button>
+<p id="card-errors" class="error"></p>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+const stripe = Stripe("{{ stripe_publishable_key }}");
+const elements = stripe.elements();
+const card = elements.create("card");
+card.mount("#card-element");
+
+document.getElementById("submit-card").addEventListener("click", async () => {
+    const {setupIntent, error} = await stripe.confirmCardSetup(
+        "{{ client_secret }}",
+        {payment_method: {card}}
+    );
+    if (error) {
+        document.getElementById("card-errors").textContent = error.message;
+    } else {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "{% url 'accounts:card_verified_complete' %}";
+        const csrf = document.createElement("input");
+        csrf.type = "hidden";
+        csrf.name = "csrfmiddlewaretoken";
+        csrf.value = "{{ csrf_token }}";
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

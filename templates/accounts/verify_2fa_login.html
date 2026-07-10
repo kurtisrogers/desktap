@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Two-factor authentication — Desktap{% endblock %}
+
+{% block content %}
+<h1>Two-factor authentication</h1>
+<p>Enter the 6-digit code from your authenticator app, or use a backup code.</p>
+<form method="post" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Verify</button>
+</form>
+{% endblock %}
