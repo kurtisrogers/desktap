@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Sign up — Desktap{% endblock %}
+
+{% block content %}
+<h1>Create your account</h1>
+<p class="muted">You must be 18 or older. Card verification and 2FA are required.</p>
+<form method="post" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Continue</button>
+</form>
+<p>Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></p>
+{% endblock %}

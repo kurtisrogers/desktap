@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Add child — Desktap{% endblock %}
+
+{% block content %}
+<h1>Add a child account</h1>
+<p class="muted">Children under 18 can only use Desktap through a verified parent account.</p>
+<form method="post" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Send invite</button>
+</form>
+{% endblock %}

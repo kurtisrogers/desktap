@@ -1,0 +1,254 @@
+:root {
+    --bg: #f4f1ec;
+    --surface: #ffffff;
+    --text: #1a1a1a;
+    --muted: #5c5c5c;
+    --accent: #2d5a4a;
+    --accent-hover: #234839;
+    --border: #ddd8d0;
+    --danger: #b33;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-width: 1024px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 64px;
+}
+
+.logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.nav a {
+    margin-left: 20px;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.nav a:hover {
+    color: var(--accent);
+}
+
+.main-content {
+    padding: 40px 24px 80px;
+}
+
+.site-footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.hero {
+    text-align: center;
+    padding: 60px 0 40px;
+}
+
+.hero h1 {
+    font-size: 2.8rem;
+    margin-bottom: 16px;
+}
+
+.lead {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 640px;
+    margin: 0 auto 32px;
+}
+
+.hero-actions .btn {
+    margin: 0 8px;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 40px;
+}
+
+.feature-card {
+    background: var(--surface);
+    padding: 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+}
+
+.btn-secondary {
+    background: var(--border);
+    color: var(--text);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.btn-link.danger {
+    color: var(--danger);
+}
+
+.form-card {
+    background: var(--surface);
+    padding: 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+}
+
+.form-card input,
+.form-card textarea,
+.form-card select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+}
+
+.post-card,
+.comment-card {
+    background: var(--surface);
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.post-footer {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    color: var(--muted);
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.messages .message {
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 8px;
+    background: #e8f4ef;
+}
+
+.blocked-page {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.backup-codes {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.backup-codes code {
+    background: var(--border);
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: block;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+}
+
+.error {
+    color: var(--danger);
+}
+
+.compose-box textarea {
+    min-height: 80px;
+}
+
+.report-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+blockquote {
+    border-left: 4px solid var(--accent);
+    margin: 12px 0;
+    padding-left: 16px;
+    color: var(--muted);
+}

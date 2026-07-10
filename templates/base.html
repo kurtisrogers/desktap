@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Desktap{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/viewport.js" defer></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="{% url 'core:landing' %}" class="logo">Desktap</a>
+            {% if user.is_authenticated %}
+            <nav class="nav">
+                <a href="{% url 'posts:feed' %}">Feed</a>
+                <a href="{% url 'posts:profile' username=user.username %}">Profile</a>
+                {% if user.is_parent %}
+                <a href="{% url 'accounts:parent_dashboard' %}">Parent</a>
+                {% endif %}
+                {% if user.role == 'support' or user.role == 'superadmin' %}
+                <a href="{% url 'moderation:report_queue' %}">Moderation</a>
+                {% endif %}
+                <a href="{% url 'accounts:settings' %}">Settings</a>
+                <a href="{% url 'accounts:logout' %}">Log out</a>
+            </nav>
+            {% else %}
+            <nav class="nav">
+                <a href="{% url 'accounts:login' %}">Log in</a>
+                <a href="{% url 'accounts:signup' %}" class="btn">Sign up</a>
+            </nav>
+            {% endif %}
+        </div>
+    </header>
+
+    {% if messages %}
+    <div class="container messages">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="container main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>Desktap — social networking for desktop. Step away from your phone.</p>
+        </div>
+    </footer>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

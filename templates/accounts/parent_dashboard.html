@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Parent dashboard — Desktap{% endblock %}
+
+{% block content %}
+<h1>Parent dashboard</h1>
+<p><a href="{% url 'accounts:add_child' %}" class="btn btn-primary">Add child account</a></p>
+
+{% if links %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Child</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for link in links %}
+        <tr>
+            <td><a href="{% url 'accounts:parent_child_detail' child_id=link.child_id %}">{{ link.child.display_name }}</a></td>
+            <td>{% if link.child_disabled %}Disabled{% else %}Active{% endif %}</td>
+            <td>
+                <form method="post" action="{% url 'accounts:parent_toggle_child' child_id=link.child_id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary">
+                        {% if link.child_disabled %}Enable{% else %}Disable{% endif %}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="muted">No child accounts linked yet.</p>
+{% endif %}
+{% endblock %}

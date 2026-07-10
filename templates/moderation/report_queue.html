@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Moderation queue — Desktap{% endblock %}
+
+{% block content %}
+<h1>Moderation queue</h1>
+{% for item in reports %}
+<div class="form-card report-card">
+    <p><strong>Report #{{ item.report.pk }}</strong> — {{ item.report.get_reason_display|default:item.report.reason }}</p>
+    <p class="muted">Filed by {{ item.report.reporter.username }} · {{ item.report.created_at }}</p>
+    {% if item.report.details %}<p>{{ item.report.details }}</p>{% endif %}
+    {% if item.content %}
+    <blockquote>{{ item.content.content }}</blockquote>
+    {% endif %}
+    <div class="report-actions">
+        <form method="post" action="{% url 'moderation:hide_content' report_id=item.report.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Hide content</button>
+        </form>
+        <form method="post" action="{% url 'moderation:dismiss_report' report_id=item.report.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Dismiss</button>
+        </form>
+    </div>
+</div>
+{% empty %}
+<p class="muted">No open reports.</p>
+{% endfor %}
+{% endblock %}

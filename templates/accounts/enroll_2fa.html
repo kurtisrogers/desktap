@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Set up 2FA — Desktap{% endblock %}
+
+{% block content %}
+{% if enrollment_complete %}
+<h1>Two-factor authentication enabled</h1>
+<p>Save these backup codes in a safe place. Each can be used once if you lose your device.</p>
+<ul class="backup-codes">
+    {% for code in backup_codes %}
+    <li><code>{{ code }}</code></li>
+    {% endfor %}
+</ul>
+<a href="{% url 'posts:feed' %}" class="btn btn-primary">Go to feed</a>
+{% else %}
+<h1>Set up two-factor authentication</h1>
+<p>Scan this QR code with your authenticator app (Google Authenticator, Authy, 1Password, etc.).</p>
+<div class="twofa-setup">
+    <img src="{{ qr_data_url }}" alt="QR code for 2FA" width="200" height="200">
+    <p class="muted">Or enter this key manually: <code>{{ config_url }}</code></p>
+</div>
+<form method="post" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Confirm and enable 2FA</button>
+</form>
+{% endif %}
+{% endblock %}

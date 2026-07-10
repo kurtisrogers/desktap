@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Desktap — Desktop-only social networking{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Social networking, without the phone.</h1>
+    <p class="lead">
+        Desktap is a desktop-only social network built for mindful screen use and online safety.
+        No endless mobile scrolling — just real connections on a real screen.
+    </p>
+    <div class="hero-actions">
+        <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Create account</a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-secondary">Log in</a>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature-card">
+        <h3>Desktop only</h3>
+        <p>Desktap cannot be used on phones or tablets. We encourage you to connect from a computer and step away from your device.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Verified users</h3>
+        <p>Every adult account is verified with a credit card (no charge) and mandatory two-factor authentication.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Family safety</h3>
+        <p>Children can only join through a verified parent, who can monitor activity and disable accounts at any time.</p>
+    </div>
+</section>
+{% endblock %}

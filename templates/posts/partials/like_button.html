@@ -1,0 +1,3 @@
+<button type="submit" class="btn-link">
+    {% if user in post.likes.all %}Unlike{% else %}Like{% endif %} ({{ post.like_count }})
+</button>
