@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from accounts.models import ParentChildLink, SecurityEvent, UserRole
@@ -189,3 +189,77 @@ class PostTests(TestCase):
         from posts.models import Post
 
         self.assertEqual(Post.objects.count(), 0)
+
+
+class SeedDevCommandTests(TestCase):
+    @override_settings(DEBUG=True)
+    def test_seed_dev_creates_expected_users(self):
+        from django.core.management import call_command
+
+        from accounts.dev_fixture_data import SEED_USERNAMES
+
+        call_command("seed_dev", verbosity=0)
+        self.assertEqual(User.objects.filter(username__in=SEED_USERNAMES).count(), 6)
+
+    @override_settings(DEBUG=True)
+    def test_seed_dev_users_can_authenticate(self):
+        from django.core.management import call_command
+
+        from accounts.dev_fixture_data import DEV_PASSWORD
+
+        call_command("seed_dev", verbosity=0)
+        user = User.objects.get(username="alex")
+        self.assertTrue(user.check_password(DEV_PASSWORD))
+        self.assertTrue(user.totp_enrolled)
+        self.assertTrue(user.card_verified)
+
+    @override_settings(DEBUG=True)
+    def test_seed_dev_creates_social_content(self):
+        from django.core.management import call_command
+
+        from posts.models import Comment, Follow, Post
+
+        call_command("seed_dev", verbosity=0)
+        self.assertGreaterEqual(Post.objects.count(), 4)
+        self.assertGreaterEqual(Comment.objects.count(), 2)
+        self.assertGreaterEqual(Follow.objects.count(), 3)
+
+    @override_settings(DEBUG=True)
+    def test_seed_dev_creates_parent_child_link(self):
+        from django.core.management import call_command
+
+        call_command("seed_dev", verbosity=0)
+        self.assertTrue(
+            ParentChildLink.objects.filter(
+                parent__username="jamie_parent",
+                child__username="sam_child",
+            ).exists()
+        )
+
+    @override_settings(DEBUG=True)
+    def test_seed_dev_creates_open_report(self):
+        from django.core.management import call_command
+
+        from moderation.models import ContentReport
+
+        call_command("seed_dev", verbosity=0)
+        self.assertTrue(ContentReport.objects.filter(status="open").exists())
+
+    @override_settings(DEBUG=True)
+    def test_current_totp_code_is_six_digits(self):
+        from django.core.management import call_command
+
+        from accounts.dev_fixture_data import current_totp_code
+
+        call_command("seed_dev", verbosity=0)
+        code = current_totp_code()
+        self.assertEqual(len(code), 6)
+        self.assertTrue(code.isdigit())
+
+    @override_settings(DEBUG=False)
+    def test_seed_dev_refuses_when_debug_disabled(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+
+        with self.assertRaises(CommandError):
+            call_command("seed_dev", verbosity=0)

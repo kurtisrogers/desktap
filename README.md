@@ -55,7 +55,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 cp .env.example .env
 python manage.py migrate
-python manage.py createsuperuser
+python manage.py seed_dev
 python manage.py runserver
 ```
 
@@ -68,10 +68,35 @@ Open **http://127.0.0.1:8000** from a desktop browser (1024px+ wide).
 3. Enroll 2FA (scan QR code)
 4. Post to your feed
 
+### Dev fixtures
+
+Load ready-made accounts, posts, follows, and a sample moderation report:
+
+```bash
+python manage.py seed_dev          # load fixtures
+python manage.py seed_dev --flush  # reset seeded data first
+```
+
+| Username | Role | Notes |
+|----------|------|-------|
+| `superadmin` | Superadmin | Full admin access |
+| `support` | Support | Moderation queue |
+| `alex` | Adult | Posts and follows |
+| `riley` | Adult | Posts and follows |
+| `jamie_parent` | Parent | Linked to `sam_child` |
+| `sam_child` | Child | Parent dashboard testing |
+
+All seeded accounts share:
+
+- **Password:** `devpass123`
+- **TOTP secret:** `JBSWY3DPEHPK3PXP` (add to any authenticator app)
+- **Backup codes:** `backup-01` … `backup-05`
+
+The command prints the current 6-digit TOTP code when it finishes.
+
 ### Dev tips
 
 - Child invite links print to the console (email backend is console)
-- Set `role=superadmin` on your superuser in Django admin
 - Install pre-commit hooks: `pre-commit install`
 
 ## Testing
