@@ -1,8 +1,15 @@
 (function () {
-    function setViewportCookie() {
+    function reportViewport() {
         var width = window.screen && window.screen.width ? window.screen.width : window.innerWidth;
-        document.cookie = "desktap_viewport_width=" + width + ";path=/;SameSite=Lax";
+        var body = new URLSearchParams();
+        body.append("width", String(width));
+        var csrf = document.querySelector("meta[name=csrf-token]");
+        var headers = {"Content-Type": "application/x-www-form-urlencoded"};
+        if (csrf) {
+            headers["X-CSRFToken"] = csrf.getAttribute("content");
+        }
+        fetch("/set-viewport/", {method: "POST", body: body.toString(), headers: headers, credentials: "same-origin"});
     }
-    setViewportCookie();
-    window.addEventListener("resize", setViewportCookie);
+    reportViewport();
+    window.addEventListener("resize", reportViewport);
 })();

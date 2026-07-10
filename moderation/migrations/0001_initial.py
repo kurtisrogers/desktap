@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -16,35 +15,84 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AuditLog',
+            name="AuditLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(max_length=100)),
-                ('target_type', models.CharField(max_length=50)),
-                ('target_id', models.PositiveIntegerField()),
-                ('metadata', models.JSONField(blank=True, default=dict)),
-                ('timestamp', models.DateTimeField(default=django.utils.timezone.now)),
-                ('actor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='audit_actions', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("action", models.CharField(max_length=100)),
+                ("target_type", models.CharField(max_length=50)),
+                ("target_id", models.PositiveIntegerField()),
+                ("metadata", models.JSONField(blank=True, default=dict)),
+                ("timestamp", models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    "actor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="audit_actions",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-timestamp'],
+                "ordering": ["-timestamp"],
             },
         ),
         migrations.CreateModel(
-            name='ContentReport',
+            name="ContentReport",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('content_type', models.CharField(choices=[('post', 'Post'), ('comment', 'Comment')], max_length=20)),
-                ('content_id', models.PositiveIntegerField()),
-                ('reason', models.CharField(max_length=50)),
-                ('details', models.TextField(blank=True)),
-                ('status', models.CharField(choices=[('open', 'Open'), ('resolved', 'Resolved'), ('dismissed', 'Dismissed')], default='open', max_length=20)),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('handled_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='reports_handled', to=settings.AUTH_USER_MODEL)),
-                ('reporter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reports_filed', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "content_type",
+                    models.CharField(
+                        choices=[("post", "Post"), ("comment", "Comment")], max_length=20
+                    ),
+                ),
+                ("content_id", models.PositiveIntegerField()),
+                ("reason", models.CharField(max_length=50)),
+                ("details", models.TextField(blank=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("open", "Open"),
+                            ("resolved", "Resolved"),
+                            ("dismissed", "Dismissed"),
+                        ],
+                        default="open",
+                        max_length=20,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    "handled_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="reports_handled",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "reporter",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="reports_filed",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
     ]

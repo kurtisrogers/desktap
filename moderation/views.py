@@ -26,18 +26,14 @@ def staff_required(view_func):
 @login_required
 @staff_required
 def report_queue(request):
-    reports = ContentReport.objects.filter(status=ReportStatus.OPEN).select_related(
-        "reporter"
-    )
+    reports = ContentReport.objects.filter(status=ReportStatus.OPEN).select_related("reporter")
     enriched = []
     for report in reports:
         content = None
         if report.content_type == "post":
             content = Post.objects.filter(pk=report.content_id).first()
         elif report.content_type == "comment":
-            content = Comment.objects.filter(pk=report.content_id).select_related(
-                "post"
-            ).first()
+            content = Comment.objects.filter(pk=report.content_id).select_related("post").first()
         enriched.append({"report": report, "content": content})
     return render(request, "moderation/report_queue.html", {"reports": enriched})
 
@@ -71,14 +67,19 @@ def suspend_user(request, user_id):
     target = get_object_or_404(User, pk=user_id)
     if target.role == UserRole.SUPERADMIN:
         return HttpResponseForbidden()
-    if (
-        target.role == UserRole.SUPPORT
-        and request.user.role != UserRole.SUPERADMIN
-    ):
+    if target.role == UserRole.SUPPORT and request.user.role != UserRole.SUPERADMIN:
         return HttpResponseForbidden()
     target.is_suspended = True
     target.save(update_fields=["is_suspended"])
+    from accounts.security import log_security_event
+
     log_action(request.user, "suspend_user", "user", target.pk)
+    log_security_event(
+        "account_suspended",
+        request=request,
+        user=request.user,
+        metadata={"target_user_id": target.pk},
+    )
     return redirect("moderation:report_queue")
 
 

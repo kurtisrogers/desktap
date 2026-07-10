@@ -99,6 +99,38 @@ class ParentChildLink(models.Model):
         return f"{self.parent.username} -> {self.child.username}"
 
 
+class SecurityEventType(models.TextChoices):
+    LOGIN_FAILED = "login_failed", "Login failed"
+    LOGIN_LOCKED = "login_locked", "Login locked"
+    LOGIN_SUCCESS = "login_success", "Login success"
+    TOTP_FAILED = "totp_failed", "2FA failed"
+    CARD_VERIFIED = "card_verified", "Card verified"
+    CONTENT_BLOCKED = "content_blocked", "Content blocked"
+    ACCOUNT_SUSPENDED = "account_suspended", "Account suspended"
+    CHILD_DISABLED = "child_disabled", "Child disabled"
+
+
+class SecurityEvent(models.Model):
+    event_type = models.CharField(max_length=50, choices=SecurityEventType.choices)
+    user = models.ForeignKey(
+        "User",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="security_events",
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=500, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.event_type} @ {self.created_at}"
+
+
 class ChildInvite(models.Model):
     parent = models.ForeignKey(
         User,

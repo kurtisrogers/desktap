@@ -5,8 +5,7 @@ from django.views.decorators.http import require_POST
 
 from accounts.forms import ReportForm
 from accounts.models import User
-from moderation.models import AuditLog, ContentReport
-from moderation.utils import log_action
+from moderation.models import ContentReport
 
 from .forms import CommentForm, PostForm
 from .models import Comment, Follow, Post

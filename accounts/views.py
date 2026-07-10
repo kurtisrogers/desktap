@@ -6,7 +6,6 @@ import qrcode
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LogoutView
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -25,10 +24,19 @@ from .forms import (
     TotpVerifyForm,
 )
 from .models import ChildInvite, ParentChildLink, User, UserRole
+from .security import (
+    clear_rate_limit,
+    get_client_ip,
+    is_rate_limited,
+    log_security_event,
+    login_rate_limit_settings,
+    record_rate_limit_attempt,
+)
 from .stripe_utils import (
     create_setup_intent,
     handle_setup_intent_succeeded,
     stripe_configured,
+    verify_setup_intent,
 )
 
 
@@ -80,12 +88,30 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect("posts:feed")
 
+    limit, period = login_rate_limit_settings()
+    ip = get_client_ip(request)
+    lock_key = f"{ip}"
+
     if request.method == "POST":
+        if is_rate_limited("login", lock_key, limit, period):
+            log_security_event("login_locked", request=request, metadata={"ip": ip})
+            form = LoginForm(request, data=request.POST)
+            form.add_error(None, "Too many login attempts. Please try again later.")
+            return render(request, "accounts/login.html", {"form": form})
+
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
+            clear_rate_limit("login", lock_key)
             request.session["pre_2fa_user_id"] = user.pk
             return redirect("accounts:verify_2fa_login")
+
+        record_rate_limit_attempt("login", lock_key, period)
+        log_security_event(
+            "login_failed",
+            request=request,
+            metadata={"username": request.POST.get("username", "")},
+        )
     else:
         form = LoginForm(request)
     return render(request, "accounts/login.html", {"form": form})
@@ -106,6 +132,7 @@ def verify_2fa_login(request):
                 del request.session["pre_2fa_user_id"]
                 login(request, user)
                 request.session["otp_verified"] = True
+                log_security_event("login_success", request=request, user=user)
                 if not user.onboarding_complete:
                     if not user.card_verified and user.role == UserRole.ADULT:
                         return redirect("accounts:verify_card")
@@ -113,6 +140,7 @@ def verify_2fa_login(request):
                         return redirect("accounts:enroll_2fa")
                 return redirect("posts:feed")
             form.add_error("token", "Invalid authentication code.")
+            log_security_event("totp_failed", request=request, user=user)
     else:
         form = TotpVerifyForm()
     return render(request, "accounts/verify_2fa_login.html", {"form": form})
@@ -125,6 +153,8 @@ def verify_card(request):
         return redirect("accounts:enroll_2fa" if not user.totp_enrolled else "posts:feed")
 
     intent_data = create_setup_intent(user)
+    if intent_data.get("setup_intent_id"):
+        request.session["pending_setup_intent_id"] = intent_data["setup_intent_id"]
     context = {
         "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
         "client_secret": intent_data["client_secret"],
@@ -141,6 +171,7 @@ def verify_card_dev(request):
     user = request.user
     user.card_verified = True
     user.save(update_fields=["card_verified"])
+    log_security_event("card_verified", request=request, user=user)
     return redirect("accounts:enroll_2fa")
 
 
@@ -213,9 +244,9 @@ def parent_child_detail(request, child_id):
     link = get_object_or_404(ParentChildLink, parent=user, child_id=child_id)
     child = link.child
     posts = child.posts.filter(is_hidden=False).order_by("-created_at")[:50]
-    comments = child.comments.filter(is_hidden=False).select_related("post").order_by(
-        "-created_at"
-    )[:50]
+    comments = (
+        child.comments.filter(is_hidden=False).select_related("post").order_by("-created_at")[:50]
+    )
     return render(
         request,
         "accounts/parent_child_detail.html",
@@ -229,6 +260,12 @@ def parent_toggle_child(request, child_id):
     link = get_object_or_404(ParentChildLink, parent=request.user, child_id=child_id)
     link.child_disabled = not link.child_disabled
     link.save(update_fields=["child_disabled"])
+    log_security_event(
+        "child_disabled",
+        request=request,
+        user=request.user,
+        metadata={"child_id": link.child_id, "disabled": link.child_disabled},
+    )
     return redirect("accounts:parent_dashboard")
 
 
@@ -300,7 +337,6 @@ def child_setup(request, token):
 @csrf_exempt
 @require_POST
 def stripe_webhook(request):
-    import json
 
     import stripe as stripe_lib
 
@@ -322,6 +358,10 @@ def stripe_webhook(request):
         user_id = handle_setup_intent_succeeded(event["data"]["object"])
         if user_id:
             User.objects.filter(pk=user_id).update(card_verified=True)
+            log_security_event(
+                "card_verified",
+                metadata={"user_id": user_id, "source": "stripe_webhook"},
+            )
     return JsonResponse({"status": "ok"})
 
 
@@ -329,6 +369,23 @@ def stripe_webhook(request):
 @require_POST
 def card_verified_complete(request):
     user = request.user
-    user.card_verified = True
-    user.save(update_fields=["card_verified"])
-    return redirect("accounts:enroll_2fa")
+    setup_intent_id = request.session.get("pending_setup_intent_id")
+
+    if settings.STRIPE_DEV_MODE:
+        user.card_verified = True
+        user.save(update_fields=["card_verified"])
+        log_security_event("card_verified", request=request, user=user)
+        return redirect("accounts:enroll_2fa")
+
+    if setup_intent_id and verify_setup_intent(setup_intent_id):
+        user.card_verified = True
+        user.save(update_fields=["card_verified"])
+        del request.session["pending_setup_intent_id"]
+        log_security_event("card_verified", request=request, user=user)
+        return redirect("accounts:enroll_2fa")
+
+    return HttpResponseForbidden("Card verification has not been confirmed.")
+
+
+def suspended(request):
+    return render(request, "accounts/suspended.html")

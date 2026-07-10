@@ -28,5 +28,6 @@ urlpatterns = [
         name="parent_toggle_child",
     ),
     path("child-setup/<str:token>/", views.child_setup, name="child_setup"),
+    path("suspended/", views.suspended, name="suspended"),
     path("stripe-webhook/", views.stripe_webhook, name="stripe_webhook"),
 ]
